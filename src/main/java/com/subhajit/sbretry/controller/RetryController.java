@@ -22,20 +22,49 @@ public class RetryController {
 
     @GetMapping("/retry-npe")
     public String retryOnNullpointerException(){
-        retryService.retryOnNullpointerException();
-        return "SUCCESS";
+        return  retryService.retryOnNullpointerException();
+    }
+
+    @GetMapping("/retry-npe-delay")
+    public String retryOnNullpointerExceptionDelay(){
+        return  retryService.retryOnNullpointerExceptionDelay();
+    }
+
+    @GetMapping("/retry-multiple")
+    public String retryOnMultipleException(){
+        return  retryService.retryOnMultipleException();
+    }
+
+    @GetMapping("/retry-npe-catched")
+    public String retryOnNullpointerCatchedException(){
+        return  retryService.retryOnNullpointerCatchedException();
     }
 
     @GetMapping("/retry-template-npe")
     public String retryTemplateOnNullpointerException(){
-        String result = retryTemplate.execute(new RetryCallback<String, NullPointerException>(){
+        String result = retryTemplate.execute(new RetryCallback<String, ArrayIndexOutOfBoundsException>(){
             @Override
-            public String doWithRetry(RetryContext retryContext) throws NullPointerException {
-                return retryService.retryTemplateOnNullpointerException("Subhajit");
+            public String doWithRetry(RetryContext retryContext) {
+                return retryService.retryTemplateOnNullpointerException("Pallobi");
             }
         });
 
+        // Replacing the above call with Lambda expression
+//        String result = retryTemplate.execute(s ->
+//            retryService.retryTemplateOnNullpointerException("Rudrik")
+//        );
+
         return result;
+    }
+
+    @GetMapping("/retry-npe-recover")
+    public String retryOnNullpointerExceptionWithRecover(){
+        return retryService.retryOnNullpointerExceptionWithRecover(1, "Subhajit");
+    }
+
+    @GetMapping("/retry-multiple-recover")
+    public String retryOnMultipleExceptionWithRecover(){
+        return retryService.retryOnMultipleExceptionWithRecover(1, "Subhajit");
     }
 
     @GetMapping("/retry-template-aie")
@@ -60,20 +89,28 @@ public class RetryController {
 
     @GetMapping("/retry-template-rte")
     public String retryTemplateOnRunTimeExceptionWithRecover(){
-        String result = retryTemplate.execute(new RetryCallback<String, RuntimeException>() {
-            @Override
-            public String doWithRetry(RetryContext retryContext) throws NullPointerException {
-                return retryService.retryTemplateOnRunTimeException("Rudrik");
-            }
-        }, new RecoveryCallback<String>() {
-            @Override
-            public String recover(RetryContext retryContext) throws Exception {
-                System.out.println("In rteRecover() : " + retryContext.getAttribute("name"));
-                System.out.println("In rteRecover count: " + retryContext.getRetryCount());
-                retryContext.getLastThrowable().printStackTrace();
-                return "recovered from rte";
-            }
-        });
+//        String result = retryTemplate.execute(new RetryCallback<String, RuntimeException>() {
+//            @Override
+//            public String doWithRetry(RetryContext retryContext) throws NullPointerException {
+//                return retryService.retryTemplateOnRunTimeException("Rudrik");
+//            }
+//        }, new RecoveryCallback<String>() {
+//            @Override
+//            public String recover(RetryContext retryContext) throws Exception {
+//                System.out.println("In rteRecover() : " + retryContext.getAttribute("name"));
+//                System.out.println("In rteRecover count: " + retryContext.getRetryCount());
+//                retryContext.getLastThrowable().printStackTrace();
+//                return "recovered from rte";
+//            }
+//        });
+
+        String result = retryTemplate.execute(context -> retryService.retryTemplateOnRunTimeException("Rudrik"),
+               context -> {
+                   System.out.println("In lambda rteRecover() : " + context.getAttribute("name"));
+                    System.out.println("In lambda rteRecover count: " + context.getRetryCount());
+                   context.getLastThrowable().printStackTrace();
+                    return "recovered from rte";
+               });
 
         return result;
     }
@@ -96,11 +133,6 @@ public class RetryController {
         return "SUCCESS";
     }
 
-    @GetMapping("/retry-npe-recover")
-    public String retryOnNullpointerExceptionWithRecover(){
-        retryService.retryOnNullpointerExceptionWithRecover(1, "Subhajit");
-        return "SUCCESS";
-    }
 
     @GetMapping("/retry-aie-recover")
     public String retryOnArrayIndexOutOfBoundsExceptionWithRecover(){
@@ -108,11 +140,5 @@ public class RetryController {
         return "SUCCESS";
     }
 
-    @GetMapping("/retry-npe-delay")
-    public String retryOnNullpointerExceptionDelay(){
-        System.out.println("In controller starts..........");
-        retryService.retryOnNullpointerExceptionDelay();
-        System.out.println("In controller ends..........");
-        return "SUCCESS";
-    }
+
 }
