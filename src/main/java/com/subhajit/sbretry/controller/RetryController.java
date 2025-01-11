@@ -9,6 +9,8 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.FileNotFoundException;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 @RestController
@@ -21,8 +23,23 @@ public class RetryController {
     private RetryService retryService;
 
     @GetMapping("/retry-npe")
-    public String retryOnNullpointerException(){
-        return  retryService.retryOnNullpointerException();
+        public String retryOnNullpointerException(){
+            return  retryService.retryOnNullpointerException();
+    }
+
+    @GetMapping("/retry-npe-2nd-level-method-fail")
+    public String retryNpe2ndLevelMethodFail(){
+        return  retryService.retryNpe2ndLevelMethodFail();
+    }
+
+    @GetMapping("/retry-npe-2nd-level-method-pass1")
+    public String retryNpe2ndLevelMethodPass1(){
+        return  retryService.retryNpe2ndLevelMethodPass1();
+    }
+
+    @GetMapping("/retry-npe-2nd-level-method-pass2")
+    public String retryNpe2ndLevelMethodPass2(){
+        return  retryService.retryNpe2ndLevelMethodPass2();
     }
 
     @GetMapping("/retry-npe-delay")
@@ -40,9 +57,37 @@ public class RetryController {
         return  retryService.retryOnNullpointerCatchedException();
     }
 
+    @GetMapping("/retry-recover")
+    public String retryWithRecover(){
+        return retryService.retryWithRecover(1, "Subhajit");
+    }
+
+    @GetMapping("/retry-multiple-recover")
+    public String retryOnMultipleExceptionWithRecover(){
+        return retryService.retryOnMultipleExceptionWithRecover(2, "Pallobi");
+    }
+
+    @GetMapping("/retry-rte")
+    public String retryOnRunTimeExceptionWith(){
+        retryService.retryOnRunTimeException(3, "Rudrik");
+        return "SUCCESS";
+    }
+
+    @GetMapping("/retry-aie-recover")
+    public String retryOnArrayIndexOutOfBoundsExceptionWithRecover(){
+        retryService.retryOnArrayIndexOutOfBoundsExceptionWithRecover(3, "Rudrik");
+        return "SUCCESS";
+    }
+
+    @GetMapping("/retry-exhaust")
+    public String retryExhaust() throws SQLException {
+        retryService.retryExhaust();
+        return "SUCCESS";
+    }
+
     @GetMapping("/retry-template-npe")
     public String retryTemplateOnNullpointerException(){
-        String result = retryTemplate.execute(new RetryCallback<String, ArrayIndexOutOfBoundsException>(){
+        String result = retryTemplate.execute(new RetryCallback<String, NullPointerException>(){
             @Override
             public String doWithRetry(RetryContext retryContext) {
                 return retryService.retryTemplateOnNullpointerException("Pallobi");
@@ -55,16 +100,6 @@ public class RetryController {
 //        );
 
         return result;
-    }
-
-    @GetMapping("/retry-npe-recover")
-    public String retryOnNullpointerExceptionWithRecover(){
-        return retryService.retryOnNullpointerExceptionWithRecover(1, "Subhajit");
-    }
-
-    @GetMapping("/retry-multiple-recover")
-    public String retryOnMultipleExceptionWithRecover(){
-        return retryService.retryOnMultipleExceptionWithRecover(1, "Subhajit");
     }
 
     @GetMapping("/retry-template-aie")
@@ -127,18 +162,9 @@ public class RetryController {
         return result;
     }
 
-    @GetMapping("/retry-rte")
-    public String retryOnRunTimeExceptionWith(){
-        retryService.retryOnRunTimeException(3, "Rudrik");
-        return "SUCCESS";
+    @GetMapping("/retry-template-fnf-2nd-level-method-fail")
+    public String retryTemplateFnf2ndLevelMethodFail() throws FileNotFoundException {
+        return retryService.retryTemplateFnf2ndLevelMethodFail();
     }
-
-
-    @GetMapping("/retry-aie-recover")
-    public String retryOnArrayIndexOutOfBoundsExceptionWithRecover(){
-        retryService.retryOnArrayIndexOutOfBoundsExceptionWithRecover(2, "Pallobi");
-        return "SUCCESS";
-    }
-
 
 }

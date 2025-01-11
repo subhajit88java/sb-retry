@@ -1,0 +1,10 @@
+1. Retry mechanism works with spring aop
+2. Retry annotation will only work in case the method is called directly from other class
+3. Retry annotation will not work of other class calls 1st level method which in turn calls 2nd level method and retry annotation is on it
+4. But if we use retry template while calling the  2nd level method from 1st level method then retry will work on 2nd level method
+5. Recover methods are local to the same class where it is mentioned. Recover method in class 1 cannot intercept exception from class2
+6. If no recover method is present in the class then upon retry exhaust, the actual exception will be delegated to the spring framework
+7. If atleast one recover method is present in the class but upon retry exhaust if it is not detected (due to return type mismatch or exception arg mismatch) then ExhaustRetryException will be thrown
+8. To print retry count use : RetrySynchronizationManager.getContext().getRetryCount()
+9. If we mention retry-attempts as n, it includes teh default execution at 9th index.
+eg : retry count 5 means -> default + 4 retry counts
